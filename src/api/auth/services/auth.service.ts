@@ -10,7 +10,8 @@ import { RoleService } from 'src/api/role/services/role.service';
 import { CreateUserDto } from 'src/api/user/dto/user.dto';
 import { UserService } from 'src/api/user/services/user.service';
 import { errorMessages } from 'src/errors/custom';
-import { PayloadDto } from '../dto/auth.dto';
+import { PayloadDto, LoginDto } from '../dto/auth.dto';
+import { CustomRepositoryCannotInheritRepositoryError } from 'typeorm';
 
 @Injectable()
 export class AuthService {
@@ -21,28 +22,46 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  async login(user: CreateUserDto) {
-    const { email, password } = user;
-    const alreadyExistingUser = await this.userService.findByEmail(email);
-    if (!alreadyExistingUser)
+ async login(loginDto: LoginDto) {
+    const { email, password } = loginDto;
+    
+    const alreadyExistingUser = await this.userService.findByEmail(email, {
+      roles: true,
+    });
+    
+    if (!alreadyExistingUser) {
       throw new UnauthorizedException(errorMessages.auth.wronCredentials);
+    }
 
     const isValidPassword = await this.userService.comparePassword(
       password,
       alreadyExistingUser.password,
     );
-    if (!isValidPassword)
+    
+    if (!isValidPassword) {
       throw new UnauthorizedException(errorMessages.auth.wronCredentials);
-    return this.generateToken({
+    }
+    
+    const { accessToken } = await this.generateToken({
       id: alreadyExistingUser.id,
       email,
     });
+
+    return {
+      accessToken,
+      user: {
+        email: alreadyExistingUser.email,
+        id: alreadyExistingUser.id,
+        roles: alreadyExistingUser.roles,
+      }
+    };
   }
 
   async register(user: CreateUserDto) {
     const alreadyExistingUser = await this.userService.findByEmail(user.email);
-    if (alreadyExistingUser)
+    if (alreadyExistingUser) {
       throw new ConflictException(errorMessages.auth.userAlreadyExist);
+    }
 
     const customerRole = await this.roleService.findById(RoleIds.Customer);
 

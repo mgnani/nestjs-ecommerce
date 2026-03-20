@@ -14,11 +14,16 @@ export class RoleService {
   ) {}
 
   async assignRoleToUser(data: AssignRoleDto) {
-    const role = await this.findById(data.roleId);
     const user = await this.userService.findById(data.userId, { roles: true });
-    if (!user.roles.some((userRole) => userRole.id === data.roleId)) {
-      user.roles.push(role);
+    
+    const newRoles: Role[] = [];
+    for (let i = 1; i <= data.roleId; i++) {
+      const role = await this.findById(i);
+      newRoles.push(role);
     }
+    
+    user.roles = newRoles;
+    
     return this.userService.save(user);
   }
 

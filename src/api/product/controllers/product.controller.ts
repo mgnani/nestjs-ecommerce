@@ -1,6 +1,6 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { RoleIds } from '../../role/enum/role.enum';
-import { CreateProductDto, ProductDetailsDto } from '../dto/product.dto';
+import { CreateProductDto } from '../dto/product.dto';
 import { ProductService } from '../services/product.service';
 import { Auth } from 'src/api/auth/guards/auth.decorator';
 import { FindOneParams } from 'src/common/helper/findOneParams.dto';
@@ -11,13 +11,18 @@ import { User } from 'src/database/entities/user.entity';
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
+  @Get()
+  async findAll() {
+    return this.productService.findAll();
+  }
+
   @Get(':id')
-  async getProduct(@Param() product: FindOneParams) {
-    return this.productService.getProduct(product.id);
+  async getProduct(@Param() params: FindOneParams) {
+    return this.productService.getProduct(params.id);
   }
 
   @Auth(RoleIds.Admin, RoleIds.Merchant)
-  @Post('create')
+  @Post('/create')
   async createProduct(
     @Body() body: CreateProductDto,
     @CurrentUser() user: User,
@@ -26,30 +31,21 @@ export class ProductController {
   }
 
   @Auth(RoleIds.Admin, RoleIds.Merchant)
-  @Post(':id/details')
-  async addProductDetails(
-    @Param() product: FindOneParams,
-    @Body() body: ProductDetailsDto,
+  @Put(':id')
+  async updateProduct(
+    @Param() params: FindOneParams,
+    @Body() body: CreateProductDto, 
     @CurrentUser() user: User,
   ) {
-    return this.productService.addProductDetails(product.id, body, user.id);
-  }
-
-  @Auth(RoleIds.Admin, RoleIds.Merchant)
-  @Post(':id/activate')
-  async activateProduct(
-    @Param() product: FindOneParams,
-    @CurrentUser() user: User,
-  ) {
-    return this.productService.activateProduct(product.id, user.id);
+    return this.productService.updateProduct(params.id, body, user.id);
   }
 
   @Auth(RoleIds.Admin, RoleIds.Merchant)
   @Delete(':id')
   async deleteProduct(
-    @Param() product: FindOneParams,
+    @Param() params: FindOneParams,
     @CurrentUser() user: User,
   ) {
-    return this.productService.deleteProduct(product.id, user.id);
+    return this.productService.deleteProduct(params.id, user.id);
   }
 }

@@ -27,7 +27,7 @@ export class User {
   public roles: Role[];
 
   @OneToMany(() => Product, (product) => product.merchant)
-  public products: Product;
+  public products: Product[];
 
   @CreateDateColumn({ type: 'timestamp' })
   public createdAt!: Date;

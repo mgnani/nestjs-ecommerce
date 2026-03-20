@@ -56,7 +56,12 @@ export class UserService {
     }
     return user;
   }
-
+  public async findAll() {
+    const users = await this.repository.find({
+      relations: ['roles'],
+    });
+    return users;
+  }
   public async save(user: User) {
     return this.repository.save(user);
   }

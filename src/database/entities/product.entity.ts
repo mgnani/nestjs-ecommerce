@@ -19,9 +19,11 @@ import {
   PrimaryGeneratedColumn,
   JoinColumn,
   Index,
+  OneToMany,
 } from 'typeorm';
 import { Category } from './category.entity';
 import { User } from './user.entity';
+import { ProductVariation } from './productVariation.entity';
 
 @Entity()
 export class Product {
@@ -82,6 +84,9 @@ export class Product {
   @IsDefined()
   @IsNumber()
   public categoryId: number;
+
+  @OneToMany(() => ProductVariation, (variation) => variation.product)
+  public variations: ProductVariation[];
 
   @CreateDateColumn({ type: 'timestamp' })
   public createdAt!: Date;

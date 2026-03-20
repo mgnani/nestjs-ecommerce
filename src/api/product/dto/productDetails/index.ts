@@ -6,7 +6,11 @@ import { TestDetails } from './test.details';
 
 export type ProductDetails = ComputerDetails | TestDetails;
 
-export function ProductDetailsTypeFn(options: TypeHelpOptions) {
+export function ProductDetailsTypeFn(options?: TypeHelpOptions) {
+  if (!options || !options.object) {
+    return Object; 
+  }
+
   switch (options.object?.details?.category) {
     case Categories.Computers:
       return ComputerDetails;
